@@ -8,6 +8,9 @@ enum Platform {
   PLATFORM_UNSPECIFIED = 0;
   PLATFORM_YOUTUBE = 1;
   PLATFORM_INSTAGRAM = 2;
+  PLATFORM_TWITTER = 3;
+  PLATFORM_LINKEDIN = 4;
+  PLATFORM_REDDIT = 5;
 }
 
 message ResponseStatus {

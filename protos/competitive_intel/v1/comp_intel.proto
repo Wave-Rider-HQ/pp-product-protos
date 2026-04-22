@@ -1,0 +1,103 @@
+// waverider-protos
+
+syntax = "proto3";
+
+package competitive_intel.v1;
+
+option go_package = "github.com/your-org/waverider-protos/pb/competitive_intel/v1;competitiveintelv1";
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+// CompetitiveIntelService provides competitor tracking and content analysis
+service CompetitiveIntelService {
+  // AddCompetitor starts tracking a competitor
+  rpc AddCompetitor(AddCompetitorRequest) returns (AddCompetitorResponse);
+
+  // GetCompetitors retrieves all tracked competitors for a user
+  rpc GetCompetitors(GetCompetitorsRequest) returns (GetCompetitorsResponse);
+
+  // GetAlerts retrieves "Ride the Wave" alerts for recent competitor uploads
+  rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse);
+
+  // AnalyzeCompetitorContent generates content suggestions based on competitor's latest video
+  rpc AnalyzeCompetitorContent(AnalyzeContentRequest) returns (AnalyzeContentResponse);
+
+  // RemoveCompetitor stops tracking a competitor
+  rpc RemoveCompetitor(RemoveCompetitorRequest) returns (RemoveCompetitorResponse);
+}
+
+message AddCompetitorRequest {
+  string user_id = 1;
+  common.v1.Platform platform = 2;
+  string handle = 3;
+}
+
+message AddCompetitorResponse {
+  common.v1.ResponseStatus status = 1;
+  string competitor_id = 2;
+}
+
+message GetCompetitorsRequest {
+  string user_id = 1;
+}
+
+message CompetitorInfo {
+  string competitor_id = 1;
+  common.v1.Platform platform = 2;
+  string handle = 3;
+  google.protobuf.Timestamp last_checked = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message GetCompetitorsResponse {
+  repeated CompetitorInfo competitors = 1;
+  int32 count = 2;
+}
+
+message GetAlertsRequest {
+  string user_id = 1;
+  bool unread_only = 2;
+}
+
+message AlertInfo {
+  string alert_id = 1;
+  string competitor_id = 2;
+  string video_title = 3;
+  string video_id = 4;
+  google.protobuf.Timestamp upload_time = 5;
+  string suggestion = 6;
+  google.protobuf.Timestamp created_at = 7;
+  bool read = 8;
+}
+
+message GetAlertsResponse {
+  repeated AlertInfo alerts = 1;
+  int32 count = 2;
+}
+
+message AnalyzeContentRequest {
+  string user_id = 1;
+  string competitor_id = 2;
+}
+
+message ContentSuggestion {
+  string discreet_mode = 1;
+  string contradiction_mode = 2;
+  string original_title = 3;
+  string video_id = 4;
+}
+
+message AnalyzeContentResponse {
+  common.v1.ResponseStatus status = 1;
+  ContentSuggestion suggestion = 2;
+}
+
+message RemoveCompetitorRequest {
+  string user_id = 1;
+  string competitor_id = 2;
+}
+
+message RemoveCompetitorResponse {
+  common.v1.ResponseStatus status = 1;
+}

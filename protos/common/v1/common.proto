@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package common.v1;
+
+option go_package = "github.com/your-org/waverider-protos/pb/common/v1;commonv1";
+
+enum Platform {
+  PLATFORM_UNSPECIFIED = 0;
+  PLATFORM_YOUTUBE = 1;
+  PLATFORM_INSTAGRAM = 2;
+}
+
+message ResponseStatus {
+  bool success = 1;
+  string message = 2;
+}

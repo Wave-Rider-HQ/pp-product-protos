@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.1.0...v1.1.1) (2026-04-30)
+
+
+### Bug Fixes
+
+* add twitch ([e9c1d5c](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/e9c1d5cba550da2d021933a9a186babe6e8ec210))
+
 ## [1.1.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.0.0...v1.1.0) (2026-04-30)
 
 

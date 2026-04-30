@@ -1,4 +1,4 @@
-module github.com/your-org/waverider-protos
+module github.com/Wave-Rider-HQ/pp-product-protos
 
 go 1.22
 

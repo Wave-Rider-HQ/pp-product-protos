@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package common.v1;
 
-option go_package = "github.com/your-org/waverider-protos/pb/common/v1;commonv1";
+option go_package = "github.com/Wave-Rider-HQ/pp-product-protos/pb/common/v1;commonv1";
 
 enum Platform {
   PLATFORM_UNSPECIFIED = 0;

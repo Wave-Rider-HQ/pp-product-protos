@@ -1,10 +1,8 @@
-// waverider-protos
-
 syntax = "proto3";
 
 package competitive_intel.v1;
 
-option go_package = "github.com/your-org/waverider-protos/pb/competitive_intel/v1;competitiveintelv1";
+option go_package = "github.com/Wave-Rider-HQ/pp-product-protos/pb/competitive_intel/v1;competitiveintelv1";
 
 import "google/protobuf/timestamp.proto";
 import "common/v1/common.proto";

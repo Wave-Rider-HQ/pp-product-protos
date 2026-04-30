@@ -34,14 +34,14 @@ Use [conventional commits](https://www.conventionalcommits.org/) on `main`:
 On push to `main`, release-please opens a release PR. Merging it creates the Git tag and GitHub Release. Consumers then pin by tag:
 
 ```sh
-go get github.com/your-org/waverider-protos@v0.1.0
+go get github.com/Wave-Rider-HQ/pp-product-protos@v0.1.0
 ```
 
 ## Importing
 
 ```go
 import (
-    competitiveintelv1 "github.com/your-org/waverider-protos/pb/competitive_intel/v1"
-    commonv1           "github.com/your-org/waverider-protos/pb/common/v1"
+    competitiveintelv1 "github.com/Wave-Rider-HQ/pp-product-protos/pb/competitive_intel/v1"
+    commonv1           "github.com/Wave-Rider-HQ/pp-product-protos/pb/common/v1"
 )
 ```

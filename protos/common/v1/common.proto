@@ -11,6 +11,7 @@ enum Platform {
   PLATFORM_TWITTER = 3;
   PLATFORM_LINKEDIN = 4;
   PLATFORM_REDDIT = 5;
+  PLATFORM_TWITCH = 6;
 }
 
 message ResponseStatus {

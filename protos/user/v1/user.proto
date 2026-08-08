@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package user.v1;
+
+option go_package = "github.com/Wave-Rider-HQ/pp-product-protos/pb/user/v1;userv1";
+
+import "common/v1/common.proto";
+
+// UserService handles registration. Register is persist-and-emit only: it
+// never calls a platform API, so onboarding is never blocked on a third
+// party. The heavy lifting (resolving competitors, fetching the user's own
+// videos, building a persona) happens asynchronously — clients observe its
+// progress via GetOnboardingStatus.
+service UserService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc GetOnboardingStatus(GetOnboardingStatusRequest) returns (GetOnboardingStatusResponse);
+}
+
+message RegisterRequest {
+  string username = 1;
+  common.v1.Platform platform = 2; // the user's own platform
+  string channel_id = 3;           // the user's own channel id on that platform
+  repeated string tags = 4;
+  repeated string competitor_handles = 5;
+}
+
+enum OnboardingStatus {
+  ONBOARDING_STATUS_UNSPECIFIED = 0;
+  ONBOARDING_STATUS_PENDING = 1;
+  ONBOARDING_STATUS_RESOLVING = 2;
+  ONBOARDING_STATUS_READY = 3;
+  ONBOARDING_STATUS_FAILED = 4;
+}
+
+message RegisterResponse {
+  string user_id = 1;
+  OnboardingStatus onboarding_status = 2;
+}
+
+message GetOnboardingStatusRequest {
+  string user_id = 1;
+}
+
+enum PersonaStatus {
+  PERSONA_STATUS_UNSPECIFIED = 0;
+  PERSONA_STATUS_PENDING = 1;
+  PERSONA_STATUS_READY = 2;
+  PERSONA_STATUS_FAILED = 3;
+}
+
+message GetOnboardingStatusResponse {
+  OnboardingStatus status = 1;
+  int32 resolved_competitor_count = 2;
+  int32 failed_competitor_count = 3;
+  int32 total_competitor_count = 4;
+  PersonaStatus persona_status = 5;
+}

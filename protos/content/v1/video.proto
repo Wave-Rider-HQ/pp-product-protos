@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package content.v1;
+
+option go_package = "github.com/Wave-Rider-HQ/pp-product-protos/pb/content/v1;contentv1";
+
+import "google/protobuf/timestamp.proto";
+
+// VideoPacket is the shared unit of video data produced by fetchr, carried
+// on Kafka events, and persisted as jsonb. transcript is declared but left
+// unpopulated until a transcript source is wired up.
+message VideoPacket {
+  string video_id = 1;
+  string channel_id = 2;
+  VideoMetadata metadata = 3;
+  repeated Comment comments = 4;
+  Transcript transcript = 5;
+}
+
+message VideoMetadata {
+  string title = 1;
+  string description = 2;
+  repeated string tags = 3;
+  google.protobuf.Timestamp published_at = 4;
+  int64 duration_seconds = 5;
+  EngagementSnapshot engagement = 6;
+}
+
+// EngagementSnapshot is a point-in-time read of a video's counters, not a
+// windowed rate — the YouTube Data API only ever exposes lifetime totals.
+// captured_at is what lets a later time-series feature derive velocity from
+// consecutive snapshots without changing this message.
+message EngagementSnapshot {
+  int64 view_count = 1;
+  int64 like_count = 2;
+  int64 comment_count = 3;
+  int64 share_count = 4; // not available from the YouTube Data API; 0 until a source exists
+  google.protobuf.Timestamp captured_at = 5;
+}
+
+// Transcript is declared for forward compatibility; source/segments are left
+// empty until a transcript fetcher is implemented.
+message Transcript {
+  string language = 1;
+  string source = 2;
+  repeated TranscriptSegment segments = 3;
+}
+
+message TranscriptSegment {
+  double start_seconds = 1;
+  double end_seconds = 2;
+  string text = 3;
+}
+
+message Comment {
+  string id = 1;
+  string author = 2;
+  string text = 3;
+  int64 like_count = 4;
+  google.protobuf.Timestamp published_at = 5;
+}

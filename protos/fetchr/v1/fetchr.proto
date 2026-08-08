@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package fetchr.v1;
+
+option go_package = "github.com/Wave-Rider-HQ/pp-product-protos/pb/fetchr/v1;fetchrv1";
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+import "content/v1/video.proto";
+
+// FetchrService is the sole caller of upstream platform APIs (YouTube today,
+// others later). Every other service resolves and fetches channel/video data
+// through this service rather than talking to the platform directly.
+service FetchrService {
+  // ResolveChannel canonicalises a platform handle to a channel id and
+  // upserts it into the global channel registry, so that repeated
+  // registrations of the same competitor by different users dedupe onto one
+  // row.
+  rpc ResolveChannel(ResolveChannelRequest) returns (ResolveChannelResponse);
+
+  // FetchChannel refreshes and returns a channel's metadata.
+  rpc FetchChannel(FetchChannelRequest) returns (FetchChannelResponse);
+
+  // FetchRecentVideos returns the channel's most recent videos as full
+  // VideoPackets. Used with a small limit for a user's own channel during
+  // onboarding.
+  rpc FetchRecentVideos(FetchRecentVideosRequest) returns (FetchRecentVideosResponse);
+
+  // CheckNewUploads compares the channel's latest upload against
+  // since_published_at and returns any videos published after it.
+  rpc CheckNewUploads(CheckNewUploadsRequest) returns (CheckNewUploadsResponse);
+}
+
+message Channel {
+  string channel_id = 1; // internal id, stable across handle changes
+  common.v1.Platform platform = 2;
+  string platform_channel_id = 3;
+  string handle = 4;
+  string title = 5;
+  int64 subscriber_count = 6;
+  string last_video_id = 7;
+  google.protobuf.Timestamp last_video_published_at = 8;
+}
+
+message ResolveChannelRequest {
+  common.v1.Platform platform = 1;
+  string handle = 2;
+}
+
+message ResolveChannelResponse {
+  Channel channel = 1;
+}
+
+message FetchChannelRequest {
+  string channel_id = 1;
+}
+
+message FetchChannelResponse {
+  Channel channel = 1;
+}
+
+message FetchRecentVideosRequest {
+  string channel_id = 1;
+  int32 limit = 2;
+}
+
+message FetchRecentVideosResponse {
+  repeated content.v1.VideoPacket videos = 1;
+}
+
+message CheckNewUploadsRequest {
+  string channel_id = 1;
+  google.protobuf.Timestamp since_published_at = 2;
+}
+
+message CheckNewUploadsResponse {
+  bool has_new = 1;
+  repeated content.v1.VideoPacket videos = 2;
+}

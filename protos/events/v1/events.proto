@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package events.v1;
+
+option go_package = "github.com/Wave-Rider-HQ/pp-product-protos/pb/events/v1;eventsv1";
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+import "content/v1/video.proto";
+
+// UserRegistered is emitted by api.UserService.Register in the same
+// transaction as the user row (via the transactional outbox), and consumed
+// by worker-onboarding.
+message UserRegistered {
+  string user_id = 1;
+  common.v1.Platform platform = 2;
+  string own_channel_id = 3;
+  repeated string tags = 4;
+  repeated string competitor_handles = 5;
+  google.protobuf.Timestamp occurred_at = 6;
+}
+
+// PersonaRequested is emitted by worker-onboarding once a user's own recent
+// videos have been fetched, and consumed by worker-persona.
+message PersonaRequested {
+  string user_id = 1;
+  repeated content.v1.VideoPacket own_recent_videos = 2;
+  repeated string tags = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+}
+
+// ChannelNewUpload is emitted by scheduler when a tracked channel's poll
+// finds a new video, and consumed by worker-content, which fans it out to
+// every subscriber of that channel.
+message ChannelNewUpload {
+  string channel_id = 1;
+  common.v1.Platform platform = 2;
+  content.v1.VideoPacket video = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+}

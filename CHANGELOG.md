@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.1.1...v1.2.0) (2026-08-08)
+
+
+### Features
+
+* add content, fetchr, user, and events proto packages ([a807926](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/a807926a53f1c198423e09d8022eead3eba63d71))
+
 ## [1.1.1](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.1.0...v1.1.1) (2026-04-30)
 
 

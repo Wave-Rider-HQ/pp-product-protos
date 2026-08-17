@@ -19,6 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	UserService_LoginWithGoogle_FullMethodName     = "/user.v1.UserService/LoginWithGoogle"
+	UserService_SetProfileData_FullMethodName      = "/user.v1.UserService/SetProfileData"
 	UserService_Register_FullMethodName            = "/user.v1.UserService/Register"
 	UserService_GetOnboardingStatus_FullMethodName = "/user.v1.UserService/GetOnboardingStatus"
 )
@@ -27,12 +29,18 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// UserService handles registration. Register is persist-and-emit only: it
-// never calls a platform API, so onboarding is never blocked on a third
+// UserService handles account auth and registration. LoginWithGoogle is the
+// sole identity entry point (Google Sign-In only — no username/password):
+// the first call for a given Google account auto-provisions a bare user
+// row, later calls just log in. Register/GetOnboardingStatus require the
+// bearer token LoginWithGoogle returns. Register is persist-and-emit only:
+// it never calls a platform API, so onboarding is never blocked on a third
 // party. The heavy lifting (resolving competitors, fetching the user's own
 // videos, building a persona) happens asynchronously — clients observe its
 // progress via GetOnboardingStatus.
 type UserServiceClient interface {
+	LoginWithGoogle(ctx context.Context, in *LoginWithGoogleRequest, opts ...grpc.CallOption) (*LoginWithGoogleResponse, error)
+	SetProfileData(ctx context.Context, in *SetProfileDataRequest, opts ...grpc.CallOption) (*SetProfileDataResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	GetOnboardingStatus(ctx context.Context, in *GetOnboardingStatusRequest, opts ...grpc.CallOption) (*GetOnboardingStatusResponse, error)
 }
@@ -43,6 +51,26 @@ type userServiceClient struct {
 
 func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 	return &userServiceClient{cc}
+}
+
+func (c *userServiceClient) LoginWithGoogle(ctx context.Context, in *LoginWithGoogleRequest, opts ...grpc.CallOption) (*LoginWithGoogleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LoginWithGoogleResponse)
+	err := c.cc.Invoke(ctx, UserService_LoginWithGoogle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) SetProfileData(ctx context.Context, in *SetProfileDataRequest, opts ...grpc.CallOption) (*SetProfileDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetProfileDataResponse)
+	err := c.cc.Invoke(ctx, UserService_SetProfileData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *userServiceClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
@@ -69,12 +97,18 @@ func (c *userServiceClient) GetOnboardingStatus(ctx context.Context, in *GetOnbo
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
 //
-// UserService handles registration. Register is persist-and-emit only: it
-// never calls a platform API, so onboarding is never blocked on a third
+// UserService handles account auth and registration. LoginWithGoogle is the
+// sole identity entry point (Google Sign-In only — no username/password):
+// the first call for a given Google account auto-provisions a bare user
+// row, later calls just log in. Register/GetOnboardingStatus require the
+// bearer token LoginWithGoogle returns. Register is persist-and-emit only:
+// it never calls a platform API, so onboarding is never blocked on a third
 // party. The heavy lifting (resolving competitors, fetching the user's own
 // videos, building a persona) happens asynchronously — clients observe its
 // progress via GetOnboardingStatus.
 type UserServiceServer interface {
+	LoginWithGoogle(context.Context, *LoginWithGoogleRequest) (*LoginWithGoogleResponse, error)
+	SetProfileData(context.Context, *SetProfileDataRequest) (*SetProfileDataResponse, error)
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	GetOnboardingStatus(context.Context, *GetOnboardingStatusRequest) (*GetOnboardingStatusResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
@@ -87,6 +121,12 @@ type UserServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedUserServiceServer struct{}
 
+func (UnimplementedUserServiceServer) LoginWithGoogle(context.Context, *LoginWithGoogleRequest) (*LoginWithGoogleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoginWithGoogle not implemented")
+}
+func (UnimplementedUserServiceServer) SetProfileData(context.Context, *SetProfileDataRequest) (*SetProfileDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetProfileData not implemented")
+}
 func (UnimplementedUserServiceServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
@@ -112,6 +152,42 @@ func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&UserService_ServiceDesc, srv)
+}
+
+func _UserService_LoginWithGoogle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginWithGoogleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).LoginWithGoogle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_LoginWithGoogle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).LoginWithGoogle(ctx, req.(*LoginWithGoogleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_SetProfileData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetProfileDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).SetProfileData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_SetProfileData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).SetProfileData(ctx, req.(*SetProfileDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -157,6 +233,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "user.v1.UserService",
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "LoginWithGoogle",
+			Handler:    _UserService_LoginWithGoogle_Handler,
+		},
+		{
+			MethodName: "SetProfileData",
+			Handler:    _UserService_SetProfileData_Handler,
+		},
 		{
 			MethodName: "Register",
 			Handler:    _UserService_Register_Handler,

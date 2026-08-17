@@ -6,15 +6,46 @@ option go_package = "github.com/Wave-Rider-HQ/pp-product-protos/pb/user/v1;userv
 
 import "common/v1/common.proto";
 
-// UserService handles registration. Register is persist-and-emit only: it
-// never calls a platform API, so onboarding is never blocked on a third
+// UserService handles account auth and registration. LoginWithGoogle is the
+// sole identity entry point (Google Sign-In only — no username/password):
+// the first call for a given Google account auto-provisions a bare user
+// row, later calls just log in. Register/GetOnboardingStatus require the
+// bearer token LoginWithGoogle returns. Register is persist-and-emit only:
+// it never calls a platform API, so onboarding is never blocked on a third
 // party. The heavy lifting (resolving competitors, fetching the user's own
 // videos, building a persona) happens asynchronously — clients observe its
 // progress via GetOnboardingStatus.
 service UserService {
+  rpc LoginWithGoogle(LoginWithGoogleRequest) returns (LoginWithGoogleResponse);
+  rpc SetProfileData(SetProfileDataRequest) returns (SetProfileDataResponse);
+
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc GetOnboardingStatus(GetOnboardingStatusRequest) returns (GetOnboardingStatusResponse);
 }
+
+// LoginWithGoogleRequest carries a Google-issued ID token from client-side
+// Google Sign-In (verified server-side against Google's public keys — the
+// server never sees a password).
+message LoginWithGoogleRequest {
+  string id_token = 1;
+}
+
+// LoginWithGoogleResponse is returned by LoginWithGoogle: an access token to present as
+// a bearer token on protected RPCs.
+message LoginWithGoogleResponse {
+  string user_id = 1;
+  string access_token = 2;
+  int64 expires_at_unix = 3;
+}
+
+// SetProfileDataRequest stores an arbitrary, client-supplied JSON blob of
+// "form data points" against the caller's own account — the user id is
+// taken from the bearer token, never from the request.
+message SetProfileDataRequest {
+  string profile_data_json = 1;
+}
+
+message SetProfileDataResponse {}
 
 message RegisterRequest {
   string username = 1;

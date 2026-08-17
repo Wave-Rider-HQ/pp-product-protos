@@ -62,6 +62,13 @@ message FetchChannelResponse {
 message FetchRecentVideosRequest {
   string channel_id = 1;
   int32 limit = 2;
+  // youtube_refresh_token, when set, is a caller-held Google OAuth refresh
+  // token (scoped to youtube.force-ssl) for the channel owner — fetchr uses
+  // it to fetch real captions for this call only, instead of the shared
+  // mock transcript fetcher every other caller (e.g. competitor polling)
+  // gets. Left empty for any channel the caller isn't the OAuth-authorized
+  // owner of.
+  string youtube_refresh_token = 3;
 }
 
 message FetchRecentVideosResponse {

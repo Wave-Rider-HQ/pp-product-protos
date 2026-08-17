@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.2.0...v1.3.0) (2026-08-17)
+
+
+### Features
+
+* **user:** add LoginWithGoogle and SetProfileData RPCs ([80b835f](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/80b835f8cf62777fc01a59d98f368952a241c769))
+* **user:** add LoginWithGoogle and SetProfileData RPCs ([b9d3c6b](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/b9d3c6b780b6a9606125ae24216122cb5c82c350))
+
 ## [1.2.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.1.1...v1.2.0) (2026-08-08)
 
 

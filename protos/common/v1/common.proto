@@ -12,6 +12,7 @@ enum Platform {
   PLATFORM_LINKEDIN = 4;
   PLATFORM_REDDIT = 5;
   PLATFORM_TWITCH = 6;
+  PLATFORM_ONLY_FANS = 7;
 }
 
 message ResponseStatus {

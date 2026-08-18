@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.3.0...v1.4.0) (2026-08-18)
+
+
+### Features
+
+* add of ([1bb26d8](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/1bb26d81b82a373b9960f3210637527ca75e9b3c))
+
 ## [1.3.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.2.0...v1.3.0) (2026-08-17)
 
 

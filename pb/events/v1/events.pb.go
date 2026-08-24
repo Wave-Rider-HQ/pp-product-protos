@@ -254,6 +254,210 @@ func (x *ChannelNewUpload) GetOccurredAt() *timestamppb.Timestamp {
 	return nil
 }
 
+// ContentGenerationRequested is emitted (via transactional outbox) by
+// ContentEngineService.CreateContentRequest — and by worker-content itself
+// for the competitor-upload fan-out path — once a content_requests row is
+// persisted. Consumed by worker-content to run stage-1 generation.
+type ContentGenerationRequested struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ContentRequestId string                 `protobuf:"bytes,1,opt,name=content_request_id,json=contentRequestId,proto3" json:"content_request_id,omitempty"`
+	OccurredAt       *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+}
+
+func (x *ContentGenerationRequested) Reset() {
+	*x = ContentGenerationRequested{}
+	mi := &file_events_v1_events_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ContentGenerationRequested) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContentGenerationRequested) ProtoMessage() {}
+
+func (x *ContentGenerationRequested) ProtoReflect() protoreflect.Message {
+	mi := &file_events_v1_events_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContentGenerationRequested.ProtoReflect.Descriptor instead.
+func (*ContentGenerationRequested) Descriptor() ([]byte, []int) {
+	return file_events_v1_events_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ContentGenerationRequested) GetContentRequestId() string {
+	if x != nil {
+		return x.ContentRequestId
+	}
+	return ""
+}
+
+func (x *ContentGenerationRequested) GetOccurredAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return nil
+}
+
+// ContentApprovalRequested is emitted (via transactional outbox) by
+// ContentEngineService.ApproveRecommendation once a recommendation is
+// approved. Consumed by worker-content to run stage-2 generation.
+type ContentApprovalRequested struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ContentRequestId string                 `protobuf:"bytes,1,opt,name=content_request_id,json=contentRequestId,proto3" json:"content_request_id,omitempty"`
+	RecommendationId string                 `protobuf:"bytes,2,opt,name=recommendation_id,json=recommendationId,proto3" json:"recommendation_id,omitempty"`
+	OccurredAt       *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+}
+
+func (x *ContentApprovalRequested) Reset() {
+	*x = ContentApprovalRequested{}
+	mi := &file_events_v1_events_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ContentApprovalRequested) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContentApprovalRequested) ProtoMessage() {}
+
+func (x *ContentApprovalRequested) ProtoReflect() protoreflect.Message {
+	mi := &file_events_v1_events_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContentApprovalRequested.ProtoReflect.Descriptor instead.
+func (*ContentApprovalRequested) Descriptor() ([]byte, []int) {
+	return file_events_v1_events_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ContentApprovalRequested) GetContentRequestId() string {
+	if x != nil {
+		return x.ContentRequestId
+	}
+	return ""
+}
+
+func (x *ContentApprovalRequested) GetRecommendationId() string {
+	if x != nil {
+		return x.RecommendationId
+	}
+	return ""
+}
+
+func (x *ContentApprovalRequested) GetOccurredAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return nil
+}
+
+// ContentEngineEvent is the envelope published to the shared
+// content.engine-events topic — both content-engine triggers ride one
+// topic rather than one each, matching this schema's existing "one shared
+// DLQ topic" approach to a tight topic budget.
+type ContentEngineEvent struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Event:
+	//
+	//	*ContentEngineEvent_GenerationRequested
+	//	*ContentEngineEvent_ApprovalRequested
+	Event isContentEngineEvent_Event `protobuf_oneof:"event"`
+}
+
+func (x *ContentEngineEvent) Reset() {
+	*x = ContentEngineEvent{}
+	mi := &file_events_v1_events_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ContentEngineEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContentEngineEvent) ProtoMessage() {}
+
+func (x *ContentEngineEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_events_v1_events_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContentEngineEvent.ProtoReflect.Descriptor instead.
+func (*ContentEngineEvent) Descriptor() ([]byte, []int) {
+	return file_events_v1_events_proto_rawDescGZIP(), []int{5}
+}
+
+func (m *ContentEngineEvent) GetEvent() isContentEngineEvent_Event {
+	if m != nil {
+		return m.Event
+	}
+	return nil
+}
+
+func (x *ContentEngineEvent) GetGenerationRequested() *ContentGenerationRequested {
+	if x, ok := x.GetEvent().(*ContentEngineEvent_GenerationRequested); ok {
+		return x.GenerationRequested
+	}
+	return nil
+}
+
+func (x *ContentEngineEvent) GetApprovalRequested() *ContentApprovalRequested {
+	if x, ok := x.GetEvent().(*ContentEngineEvent_ApprovalRequested); ok {
+		return x.ApprovalRequested
+	}
+	return nil
+}
+
+type isContentEngineEvent_Event interface {
+	isContentEngineEvent_Event()
+}
+
+type ContentEngineEvent_GenerationRequested struct {
+	GenerationRequested *ContentGenerationRequested `protobuf:"bytes,1,opt,name=generation_requested,json=generationRequested,proto3,oneof"`
+}
+
+type ContentEngineEvent_ApprovalRequested struct {
+	ApprovalRequested *ContentApprovalRequested `protobuf:"bytes,2,opt,name=approval_requested,json=approvalRequested,proto3,oneof"`
+}
+
+func (*ContentEngineEvent_GenerationRequested) isContentEngineEvent_Event() {}
+
+func (*ContentEngineEvent_ApprovalRequested) isContentEngineEvent_Event() {}
+
 var File_events_v1_events_proto protoreflect.FileDescriptor
 
 var file_events_v1_events_proto_rawDesc = []byte{
@@ -305,12 +509,45 @@ var file_events_v1_events_proto_rawDesc = []byte{
 	0x3b, 0x0a, 0x0b, 0x6f, 0x63, 0x63, 0x75, 0x72, 0x72, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x04,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
-	0x52, 0x0a, 0x6f, 0x63, 0x63, 0x75, 0x72, 0x72, 0x65, 0x64, 0x41, 0x74, 0x42, 0x42, 0x5a, 0x40,
-	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x57, 0x61, 0x76, 0x65, 0x2d,
-	0x52, 0x69, 0x64, 0x65, 0x72, 0x2d, 0x48, 0x51, 0x2f, 0x70, 0x70, 0x2d, 0x70, 0x72, 0x6f, 0x64,
-	0x75, 0x63, 0x74, 0x2d, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x62, 0x2f, 0x65, 0x76,
-	0x65, 0x6e, 0x74, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x76, 0x31,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x52, 0x0a, 0x6f, 0x63, 0x63, 0x75, 0x72, 0x72, 0x65, 0x64, 0x41, 0x74, 0x22, 0x87, 0x01, 0x0a,
+	0x1a, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x65, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x63,
+	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x64, 0x12, 0x3b, 0x0a, 0x0b, 0x6f, 0x63, 0x63,
+	0x75, 0x72, 0x72, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a,
+	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
+	0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0a, 0x6f, 0x63, 0x63, 0x75,
+	0x72, 0x72, 0x65, 0x64, 0x41, 0x74, 0x22, 0xb2, 0x01, 0x0a, 0x18, 0x43, 0x6f, 0x6e, 0x74, 0x65,
+	0x6e, 0x74, 0x41, 0x70, 0x70, 0x72, 0x6f, 0x76, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x65, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x5f, 0x72,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x10, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49,
+	0x64, 0x12, 0x2b, 0x0a, 0x11, 0x72, 0x65, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x64, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x10, 0x72, 0x65,
+	0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x3b,
+	0x0a, 0x0b, 0x6f, 0x63, 0x63, 0x75, 0x72, 0x72, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52,
+	0x0a, 0x6f, 0x63, 0x63, 0x75, 0x72, 0x72, 0x65, 0x64, 0x41, 0x74, 0x22, 0xcf, 0x01, 0x0a, 0x12,
+	0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x45, 0x6e, 0x67, 0x69, 0x6e, 0x65, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x12, 0x5a, 0x0a, 0x14, 0x67, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x25, 0x2e, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e,
+	0x74, 0x65, 0x6e, 0x74, 0x47, 0x65, 0x6e, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x65, 0x64, 0x48, 0x00, 0x52, 0x13, 0x67, 0x65, 0x6e, 0x65, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x65, 0x64, 0x12, 0x54,
+	0x0a, 0x12, 0x61, 0x70, 0x70, 0x72, 0x6f, 0x76, 0x61, 0x6c, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x65, 0x76, 0x65,
+	0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x41, 0x70,
+	0x70, 0x72, 0x6f, 0x76, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x65, 0x64, 0x48,
+	0x00, 0x52, 0x11, 0x61, 0x70, 0x70, 0x72, 0x6f, 0x76, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x65, 0x64, 0x42, 0x07, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x42, 0x42, 0x5a,
+	0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x57, 0x61, 0x76, 0x65,
+	0x2d, 0x52, 0x69, 0x64, 0x65, 0x72, 0x2d, 0x48, 0x51, 0x2f, 0x70, 0x70, 0x2d, 0x70, 0x72, 0x6f,
+	0x64, 0x75, 0x63, 0x74, 0x2d, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x62, 0x2f, 0x65,
+	0x76, 0x65, 0x6e, 0x74, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x76,
+	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -325,28 +562,35 @@ func file_events_v1_events_proto_rawDescGZIP() []byte {
 	return file_events_v1_events_proto_rawDescData
 }
 
-var file_events_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_events_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_events_v1_events_proto_goTypes = []any{
-	(*UserRegistered)(nil),        // 0: events.v1.UserRegistered
-	(*PersonaRequested)(nil),      // 1: events.v1.PersonaRequested
-	(*ChannelNewUpload)(nil),      // 2: events.v1.ChannelNewUpload
-	(v1.Platform)(0),              // 3: common.v1.Platform
-	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
-	(*v11.VideoPacket)(nil),       // 5: content.v1.VideoPacket
+	(*UserRegistered)(nil),             // 0: events.v1.UserRegistered
+	(*PersonaRequested)(nil),           // 1: events.v1.PersonaRequested
+	(*ChannelNewUpload)(nil),           // 2: events.v1.ChannelNewUpload
+	(*ContentGenerationRequested)(nil), // 3: events.v1.ContentGenerationRequested
+	(*ContentApprovalRequested)(nil),   // 4: events.v1.ContentApprovalRequested
+	(*ContentEngineEvent)(nil),         // 5: events.v1.ContentEngineEvent
+	(v1.Platform)(0),                   // 6: common.v1.Platform
+	(*timestamppb.Timestamp)(nil),      // 7: google.protobuf.Timestamp
+	(*v11.VideoPacket)(nil),            // 8: content.v1.VideoPacket
 }
 var file_events_v1_events_proto_depIdxs = []int32{
-	3, // 0: events.v1.UserRegistered.platform:type_name -> common.v1.Platform
-	4, // 1: events.v1.UserRegistered.occurred_at:type_name -> google.protobuf.Timestamp
-	5, // 2: events.v1.PersonaRequested.own_recent_videos:type_name -> content.v1.VideoPacket
-	4, // 3: events.v1.PersonaRequested.occurred_at:type_name -> google.protobuf.Timestamp
-	3, // 4: events.v1.ChannelNewUpload.platform:type_name -> common.v1.Platform
-	5, // 5: events.v1.ChannelNewUpload.video:type_name -> content.v1.VideoPacket
-	4, // 6: events.v1.ChannelNewUpload.occurred_at:type_name -> google.protobuf.Timestamp
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	6,  // 0: events.v1.UserRegistered.platform:type_name -> common.v1.Platform
+	7,  // 1: events.v1.UserRegistered.occurred_at:type_name -> google.protobuf.Timestamp
+	8,  // 2: events.v1.PersonaRequested.own_recent_videos:type_name -> content.v1.VideoPacket
+	7,  // 3: events.v1.PersonaRequested.occurred_at:type_name -> google.protobuf.Timestamp
+	6,  // 4: events.v1.ChannelNewUpload.platform:type_name -> common.v1.Platform
+	8,  // 5: events.v1.ChannelNewUpload.video:type_name -> content.v1.VideoPacket
+	7,  // 6: events.v1.ChannelNewUpload.occurred_at:type_name -> google.protobuf.Timestamp
+	7,  // 7: events.v1.ContentGenerationRequested.occurred_at:type_name -> google.protobuf.Timestamp
+	7,  // 8: events.v1.ContentApprovalRequested.occurred_at:type_name -> google.protobuf.Timestamp
+	3,  // 9: events.v1.ContentEngineEvent.generation_requested:type_name -> events.v1.ContentGenerationRequested
+	4,  // 10: events.v1.ContentEngineEvent.approval_requested:type_name -> events.v1.ContentApprovalRequested
+	11, // [11:11] is the sub-list for method output_type
+	11, // [11:11] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_events_v1_events_proto_init() }
@@ -354,13 +598,17 @@ func file_events_v1_events_proto_init() {
 	if File_events_v1_events_proto != nil {
 		return
 	}
+	file_events_v1_events_proto_msgTypes[5].OneofWrappers = []any{
+		(*ContentEngineEvent_GenerationRequested)(nil),
+		(*ContentEngineEvent_ApprovalRequested)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_events_v1_events_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

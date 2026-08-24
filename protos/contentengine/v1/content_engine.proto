@@ -1,0 +1,147 @@
+syntax = "proto3";
+
+package contentengine.v1;
+
+option go_package = "github.com/Wave-Rider-HQ/pp-product-protos/pb/contentengine/v1;contentenginev1";
+
+import "google/protobuf/timestamp.proto";
+
+// ContentEngineService turns some input (a competitor's video, a user's
+// on-demand brief, trending tags, promo media) into content the user can
+// post. Generation is two-stage and approval-gated: CreateContentRequest
+// produces 3 short, disposable recommendations; ApproveRecommendation picks
+// exactly one and generates the full script/description for it. Both RPCs
+// return immediately — they persist-and-emit only, never call an LLM
+// synchronously — so a caller never blocks on generation latency. The
+// caller's user id is always taken from the bearer token, never from the
+// request.
+service ContentEngineService {
+  rpc CreateContentRequest(CreateContentRequestRequest) returns (ContentRequest);
+  rpc GetContentRequest(GetContentRequestRequest) returns (ContentRequest);
+  rpc ListContentRequests(ListContentRequestsRequest) returns (ListContentRequestsResponse);
+  rpc ApproveRecommendation(ApproveRecommendationRequest) returns (ContentRequest);
+  rpc RegenerateRecommendations(RegenerateRecommendationsRequest) returns (ContentRequest);
+}
+
+enum SourceType {
+  SOURCE_TYPE_UNSPECIFIED = 0;
+  SOURCE_TYPE_COMPETITOR_VIDEO = 1;
+  SOURCE_TYPE_ON_DEMAND = 2;
+  SOURCE_TYPE_TRENDING_TAG = 3;
+  SOURCE_TYPE_PRODUCT_PROMOTION = 4;
+}
+
+// ContentInputs is a source-agnostic bag of everything the generator might
+// draw on — only the fields relevant to source_type are expected to be set.
+message ContentInputs {
+  string competitor_video_id = 1; // internal videos.id — SOURCE_TYPE_COMPETITOR_VIDEO
+  string brief = 2;               // free-text ask — SOURCE_TYPE_ON_DEMAND
+  repeated string trending_tags = 3;
+  repeated MediaRef media_refs = 4; // SOURCE_TYPE_PRODUCT_PROMOTION and future sources
+  // competitor_video is a snapshot of the video's real metadata, captured
+  // at request-creation time (the caller already has the VideoPacket in
+  // hand — from the channel.new-upload event for the fan-out path). This
+  // avoids the generator needing its own video-lookup dependency, and
+  // deliberately excludes transcript — competitor transcripts are a
+  // mock placeholder only (captions require the video owner's own OAuth).
+  CompetitorVideoSnapshot competitor_video = 5;
+}
+
+message CompetitorVideoSnapshot {
+  string title = 1;
+  string description = 2;
+  repeated string tags = 3;
+  int64 view_count = 4;
+  int64 like_count = 5;
+  int64 comment_count = 6;
+  repeated string top_comments = 7;
+}
+
+message MediaRef {
+  string url = 1;
+  string kind = 2; // "image" | "video" | "doc" — freeform for now
+  string description = 3;
+}
+
+enum ContentRequestStatus {
+  CONTENT_REQUEST_STATUS_UNSPECIFIED = 0;
+  CONTENT_REQUEST_STATUS_PENDING = 1;
+  CONTENT_REQUEST_STATUS_RECOMMENDATIONS_READY = 2;
+  CONTENT_REQUEST_STATUS_APPROVED = 3;
+  CONTENT_REQUEST_STATUS_READY = 4;
+  CONTENT_REQUEST_STATUS_FAILED = 5;
+}
+
+// Recommendation is one of the 3 cheap, disposable ideas generated in
+// stage 1 — a title/script draft/description/rationale, not final content.
+message Recommendation {
+  string id = 1;
+  int32 index = 2;
+  string title = 3;
+  string script_draft = 4;
+  string description = 5;
+  string rationale = 6;
+}
+
+// GeneratedContent is the stage-2 output, produced once the user approves
+// exactly one Recommendation.
+message GeneratedContent {
+  string title = 1;
+  string script = 2;
+  string description = 3;
+  repeated string hashtags = 4;
+  string source = 5; // "bedrock" | "fallback"
+  string model = 6;
+  google.protobuf.Timestamp generated_at = 7;
+}
+
+message ContentRequest {
+  string id = 1;
+  string user_id = 2;
+  SourceType source_type = 3;
+  ContentInputs inputs = 4;
+  ContentRequestStatus status = 5;
+  repeated Recommendation recommendations = 6;
+  string approved_recommendation_id = 7;
+  GeneratedContent final_content = 8;
+  string idempotency_key = 9;
+  string error = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message CreateContentRequestRequest {
+  SourceType source_type = 1;
+  ContentInputs inputs = 2;
+  // idempotency_key is optional for sources the server can key
+  // deterministically (e.g. competitor video + user); required in practice
+  // for on-demand requests so a client retry doesn't spawn a duplicate.
+  string idempotency_key = 3;
+}
+
+message GetContentRequestRequest {
+  string id = 1;
+}
+
+message ListContentRequestsRequest {
+  ContentRequestStatus status_filter = 1;
+  string page_token = 2;
+  int32 page_size = 3;
+}
+
+message ListContentRequestsResponse {
+  repeated ContentRequest content_requests = 1;
+  string next_page_token = 2;
+}
+
+message ApproveRecommendationRequest {
+  string content_request_id = 1;
+  string recommendation_id = 2;
+}
+
+// RegenerateRecommendationsRequest is the explicit, user-triggered escape
+// hatch from CreateContentRequest's idempotency — the only way to redo
+// stage 1 for an existing request (only valid before approval).
+message RegenerateRecommendationsRequest {
+  string content_request_id = 1;
+}

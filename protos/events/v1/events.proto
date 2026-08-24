@@ -38,3 +38,32 @@ message ChannelNewUpload {
   content.v1.VideoPacket video = 3;
   google.protobuf.Timestamp occurred_at = 4;
 }
+
+// ContentGenerationRequested is emitted (via transactional outbox) by
+// ContentEngineService.CreateContentRequest — and by worker-content itself
+// for the competitor-upload fan-out path — once a content_requests row is
+// persisted. Consumed by worker-content to run stage-1 generation.
+message ContentGenerationRequested {
+  string content_request_id = 1;
+  google.protobuf.Timestamp occurred_at = 2;
+}
+
+// ContentApprovalRequested is emitted (via transactional outbox) by
+// ContentEngineService.ApproveRecommendation once a recommendation is
+// approved. Consumed by worker-content to run stage-2 generation.
+message ContentApprovalRequested {
+  string content_request_id = 1;
+  string recommendation_id = 2;
+  google.protobuf.Timestamp occurred_at = 3;
+}
+
+// ContentEngineEvent is the envelope published to the shared
+// content.engine-events topic — both content-engine triggers ride one
+// topic rather than one each, matching this schema's existing "one shared
+// DLQ topic" approach to a tight topic budget.
+message ContentEngineEvent {
+  oneof event {
+    ContentGenerationRequested generation_requested = 1;
+    ContentApprovalRequested approval_requested = 2;
+  }
+}

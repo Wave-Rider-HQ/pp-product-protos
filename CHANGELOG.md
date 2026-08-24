@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.4.0...v1.5.0) (2026-08-24)
+
+
+### Features
+
+* add competitor video snapshot to ContentInputs ([a8fd6df](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/a8fd6dfb7cbc2f8481d4e3f6be7d7066bf3ad953))
+* add ContentEngineService and content-engine Kafka events ([69a4b45](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/69a4b45dac7d25063f906f51bf360c33a2c42dda))
+
 ## [1.4.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.3.0...v1.4.0) (2026-08-18)
 
 

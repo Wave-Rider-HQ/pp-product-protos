@@ -38,6 +38,23 @@ message ContentInputs {
   string brief = 2;               // free-text ask — SOURCE_TYPE_ON_DEMAND
   repeated string trending_tags = 3;
   repeated MediaRef media_refs = 4; // SOURCE_TYPE_PRODUCT_PROMOTION and future sources
+  // competitor_video is a snapshot of the video's real metadata, captured
+  // at request-creation time (the caller already has the VideoPacket in
+  // hand — from the channel.new-upload event for the fan-out path). This
+  // avoids the generator needing its own video-lookup dependency, and
+  // deliberately excludes transcript — competitor transcripts are a
+  // mock placeholder only (captions require the video owner's own OAuth).
+  CompetitorVideoSnapshot competitor_video = 5;
+}
+
+message CompetitorVideoSnapshot {
+  string title = 1;
+  string description = 2;
+  repeated string tags = 3;
+  int64 view_count = 4;
+  int64 like_count = 5;
+  int64 comment_count = 6;
+  repeated string top_comments = 7;
 }
 
 message MediaRef {

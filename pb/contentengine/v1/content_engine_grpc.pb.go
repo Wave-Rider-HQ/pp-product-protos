@@ -19,11 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ContentEngineService_CreateContentRequest_FullMethodName      = "/contentengine.v1.ContentEngineService/CreateContentRequest"
-	ContentEngineService_GetContentRequest_FullMethodName         = "/contentengine.v1.ContentEngineService/GetContentRequest"
-	ContentEngineService_ListContentRequests_FullMethodName       = "/contentengine.v1.ContentEngineService/ListContentRequests"
-	ContentEngineService_ApproveRecommendation_FullMethodName     = "/contentengine.v1.ContentEngineService/ApproveRecommendation"
-	ContentEngineService_RegenerateRecommendations_FullMethodName = "/contentengine.v1.ContentEngineService/RegenerateRecommendations"
+	ContentEngineService_CreateContentRequest_FullMethodName              = "/contentengine.v1.ContentEngineService/CreateContentRequest"
+	ContentEngineService_GetContentRequest_FullMethodName                 = "/contentengine.v1.ContentEngineService/GetContentRequest"
+	ContentEngineService_ListContentRequests_FullMethodName               = "/contentengine.v1.ContentEngineService/ListContentRequests"
+	ContentEngineService_ApproveRecommendation_FullMethodName             = "/contentengine.v1.ContentEngineService/ApproveRecommendation"
+	ContentEngineService_RegenerateRecommendations_FullMethodName         = "/contentengine.v1.ContentEngineService/RegenerateRecommendations"
+	ContentEngineService_GetChannelVideoRecommendations_FullMethodName    = "/contentengine.v1.ContentEngineService/GetChannelVideoRecommendations"
+	ContentEngineService_ApproveChannelVideoRecommendation_FullMethodName = "/contentengine.v1.ContentEngineService/ApproveChannelVideoRecommendation"
 )
 
 // ContentEngineServiceClient is the client API for ContentEngineService service.
@@ -45,6 +47,16 @@ type ContentEngineServiceClient interface {
 	ListContentRequests(ctx context.Context, in *ListContentRequestsRequest, opts ...grpc.CallOption) (*ListContentRequestsResponse, error)
 	ApproveRecommendation(ctx context.Context, in *ApproveRecommendationRequest, opts ...grpc.CallOption) (*ContentRequest, error)
 	RegenerateRecommendations(ctx context.Context, in *RegenerateRecommendationsRequest, opts ...grpc.CallOption) (*ContentRequest, error)
+	// GetChannelVideoRecommendations / ApproveChannelVideoRecommendation are
+	// the competitor-video path: the 3 recommendations for a given video are
+	// generated exactly once (shared across every subscriber of that
+	// channel), never keyed to a user, and never persona-flavored. A
+	// subscriber approves one of the shared ideas to get their own
+	// persona-flavored ContentRequest — same stage-2 generation
+	// ApproveRecommendation's approval triggers, just entered from a shared
+	// idea instead of a per-user CreateContentRequest.
+	GetChannelVideoRecommendations(ctx context.Context, in *GetChannelVideoRecommendationsRequest, opts ...grpc.CallOption) (*ChannelVideoRecommendations, error)
+	ApproveChannelVideoRecommendation(ctx context.Context, in *ApproveChannelVideoRecommendationRequest, opts ...grpc.CallOption) (*ContentRequest, error)
 }
 
 type contentEngineServiceClient struct {
@@ -105,6 +117,26 @@ func (c *contentEngineServiceClient) RegenerateRecommendations(ctx context.Conte
 	return out, nil
 }
 
+func (c *contentEngineServiceClient) GetChannelVideoRecommendations(ctx context.Context, in *GetChannelVideoRecommendationsRequest, opts ...grpc.CallOption) (*ChannelVideoRecommendations, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChannelVideoRecommendations)
+	err := c.cc.Invoke(ctx, ContentEngineService_GetChannelVideoRecommendations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *contentEngineServiceClient) ApproveChannelVideoRecommendation(ctx context.Context, in *ApproveChannelVideoRecommendationRequest, opts ...grpc.CallOption) (*ContentRequest, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ContentRequest)
+	err := c.cc.Invoke(ctx, ContentEngineService_ApproveChannelVideoRecommendation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ContentEngineServiceServer is the server API for ContentEngineService service.
 // All implementations must embed UnimplementedContentEngineServiceServer
 // for forward compatibility.
@@ -124,6 +156,16 @@ type ContentEngineServiceServer interface {
 	ListContentRequests(context.Context, *ListContentRequestsRequest) (*ListContentRequestsResponse, error)
 	ApproveRecommendation(context.Context, *ApproveRecommendationRequest) (*ContentRequest, error)
 	RegenerateRecommendations(context.Context, *RegenerateRecommendationsRequest) (*ContentRequest, error)
+	// GetChannelVideoRecommendations / ApproveChannelVideoRecommendation are
+	// the competitor-video path: the 3 recommendations for a given video are
+	// generated exactly once (shared across every subscriber of that
+	// channel), never keyed to a user, and never persona-flavored. A
+	// subscriber approves one of the shared ideas to get their own
+	// persona-flavored ContentRequest — same stage-2 generation
+	// ApproveRecommendation's approval triggers, just entered from a shared
+	// idea instead of a per-user CreateContentRequest.
+	GetChannelVideoRecommendations(context.Context, *GetChannelVideoRecommendationsRequest) (*ChannelVideoRecommendations, error)
+	ApproveChannelVideoRecommendation(context.Context, *ApproveChannelVideoRecommendationRequest) (*ContentRequest, error)
 	mustEmbedUnimplementedContentEngineServiceServer()
 }
 
@@ -148,6 +190,12 @@ func (UnimplementedContentEngineServiceServer) ApproveRecommendation(context.Con
 }
 func (UnimplementedContentEngineServiceServer) RegenerateRecommendations(context.Context, *RegenerateRecommendationsRequest) (*ContentRequest, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegenerateRecommendations not implemented")
+}
+func (UnimplementedContentEngineServiceServer) GetChannelVideoRecommendations(context.Context, *GetChannelVideoRecommendationsRequest) (*ChannelVideoRecommendations, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChannelVideoRecommendations not implemented")
+}
+func (UnimplementedContentEngineServiceServer) ApproveChannelVideoRecommendation(context.Context, *ApproveChannelVideoRecommendationRequest) (*ContentRequest, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApproveChannelVideoRecommendation not implemented")
 }
 func (UnimplementedContentEngineServiceServer) mustEmbedUnimplementedContentEngineServiceServer() {}
 func (UnimplementedContentEngineServiceServer) testEmbeddedByValue()                              {}
@@ -260,6 +308,42 @@ func _ContentEngineService_RegenerateRecommendations_Handler(srv interface{}, ct
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ContentEngineService_GetChannelVideoRecommendations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChannelVideoRecommendationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentEngineServiceServer).GetChannelVideoRecommendations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContentEngineService_GetChannelVideoRecommendations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentEngineServiceServer).GetChannelVideoRecommendations(ctx, req.(*GetChannelVideoRecommendationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ContentEngineService_ApproveChannelVideoRecommendation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApproveChannelVideoRecommendationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentEngineServiceServer).ApproveChannelVideoRecommendation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContentEngineService_ApproveChannelVideoRecommendation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentEngineServiceServer).ApproveChannelVideoRecommendation(ctx, req.(*ApproveChannelVideoRecommendationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ContentEngineService_ServiceDesc is the grpc.ServiceDesc for ContentEngineService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -286,6 +370,14 @@ var ContentEngineService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegenerateRecommendations",
 			Handler:    _ContentEngineService_RegenerateRecommendations_Handler,
+		},
+		{
+			MethodName: "GetChannelVideoRecommendations",
+			Handler:    _ContentEngineService_GetChannelVideoRecommendations_Handler,
+		},
+		{
+			MethodName: "ApproveChannelVideoRecommendation",
+			Handler:    _ContentEngineService_ApproveChannelVideoRecommendation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -21,6 +21,17 @@ service ContentEngineService {
   rpc ListContentRequests(ListContentRequestsRequest) returns (ListContentRequestsResponse);
   rpc ApproveRecommendation(ApproveRecommendationRequest) returns (ContentRequest);
   rpc RegenerateRecommendations(RegenerateRecommendationsRequest) returns (ContentRequest);
+
+  // GetChannelVideoRecommendations / ApproveChannelVideoRecommendation are
+  // the competitor-video path: the 3 recommendations for a given video are
+  // generated exactly once (shared across every subscriber of that
+  // channel), never keyed to a user, and never persona-flavored. A
+  // subscriber approves one of the shared ideas to get their own
+  // persona-flavored ContentRequest — same stage-2 generation
+  // ApproveRecommendation's approval triggers, just entered from a shared
+  // idea instead of a per-user CreateContentRequest.
+  rpc GetChannelVideoRecommendations(GetChannelVideoRecommendationsRequest) returns (ChannelVideoRecommendations);
+  rpc ApproveChannelVideoRecommendation(ApproveChannelVideoRecommendationRequest) returns (ContentRequest);
 }
 
 enum SourceType {
@@ -144,4 +155,26 @@ message ApproveRecommendationRequest {
 // stage 1 for an existing request (only valid before approval).
 message RegenerateRecommendationsRequest {
   string content_request_id = 1;
+}
+
+// ChannelVideoRecommendations is the shared, persona-free idea set for one
+// competitor video — generated once regardless of subscriber count.
+message ChannelVideoRecommendations {
+  string video_id = 1;
+  string channel_id = 2;
+  ContentRequestStatus status = 3; // only PENDING / RECOMMENDATIONS_READY / FAILED apply here
+  repeated Recommendation recommendations = 4;
+  string error = 5;
+}
+
+message GetChannelVideoRecommendationsRequest {
+  string video_id = 1;
+}
+
+// ApproveChannelVideoRecommendationRequest picks one shared idea for the
+// caller (user id from the bearer token) — this is what creates their own
+// persona-flavored ContentRequest.
+message ApproveChannelVideoRecommendationRequest {
+  string video_id = 1;
+  string recommendation_id = 2;
 }

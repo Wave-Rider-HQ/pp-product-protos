@@ -67,3 +67,24 @@ message ContentEngineEvent {
     ContentApprovalRequested approval_requested = 2;
   }
 }
+
+// RecommendationRequested is emitted by worker-persona once a user's persona
+// has been persisted — the last stage of onboarding, and therefore the point
+// at which every input the recommendation pipeline needs (own videos,
+// resolved competitors, persona) exists. Consumed by worker-recommendation.
+//
+// request_id makes the event idempotent under at-least-once delivery: the
+// recommendation run row is keyed on it, so a redelivered event resolves to
+// the run that already exists instead of starting a second one.
+//
+// There is deliberately no matching "RecommendationReady" event. A completed
+// run hands off by creating a content request with
+// SOURCE_TYPE_RECOMMENDATION, which emits ContentGenerationRequested on the
+// content-engine topic above — a second topic carrying "the run finished"
+// would have had no consumer of its own.
+message RecommendationRequested {
+  string user_id = 1;
+  string request_id = 2;
+  repeated string tags = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+}

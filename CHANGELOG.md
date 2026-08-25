@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.6.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.5.0...v1.6.0) (2026-08-25)
+
+
+### Features
+
+* add fetchr trending/search RPCs and recommendation events ([36b022e](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/36b022e0a813eb3847b9b8ad19bd8faeed7dc2d4))
+* add fetchr trending/search RPCs and recommendation events ([5982d62](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/5982d62fb72f89c97ff6405947f4d4c7404b2022))
+* add shared channel-video recommendations to ContentEngineService ([1b94354](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/1b943544c87f2323fc59266514afc40676cde633))
+* add shared channel-video recommendations to ContentEngineService ([0900ff7](https://github.com/Wave-Rider-HQ/pp-product-protos/commit/0900ff7843d7eb43cfd57fa880c850e884e86710))
+
 ## [1.5.0](https://github.com/Wave-Rider-HQ/pp-product-protos/compare/v1.4.0...v1.5.0) (2026-08-24)
 
 

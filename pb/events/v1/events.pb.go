@@ -458,6 +458,89 @@ func (*ContentEngineEvent_GenerationRequested) isContentEngineEvent_Event() {}
 
 func (*ContentEngineEvent_ApprovalRequested) isContentEngineEvent_Event() {}
 
+// RecommendationRequested is emitted by worker-persona once a user's persona
+// has been persisted — the last stage of onboarding, and therefore the point
+// at which every input the recommendation pipeline needs (own videos,
+// resolved competitors, persona) exists. Consumed by worker-recommendation.
+//
+// request_id makes the event idempotent under at-least-once delivery: the
+// recommendation run row is keyed on it, so a redelivered event resolves to
+// the run that already exists instead of starting a second one.
+//
+// There is deliberately no matching "RecommendationReady" event. A completed
+// run hands off by creating a content request with
+// SOURCE_TYPE_RECOMMENDATION, which emits ContentGenerationRequested on the
+// content-engine topic above — a second topic carrying "the run finished"
+// would have had no consumer of its own.
+type RecommendationRequested struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserId     string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	RequestId  string                 `protobuf:"bytes,2,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	Tags       []string               `protobuf:"bytes,3,rep,name=tags,proto3" json:"tags,omitempty"`
+	OccurredAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+}
+
+func (x *RecommendationRequested) Reset() {
+	*x = RecommendationRequested{}
+	mi := &file_events_v1_events_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecommendationRequested) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecommendationRequested) ProtoMessage() {}
+
+func (x *RecommendationRequested) ProtoReflect() protoreflect.Message {
+	mi := &file_events_v1_events_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecommendationRequested.ProtoReflect.Descriptor instead.
+func (*RecommendationRequested) Descriptor() ([]byte, []int) {
+	return file_events_v1_events_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *RecommendationRequested) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *RecommendationRequested) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *RecommendationRequested) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *RecommendationRequested) GetOccurredAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return nil
+}
+
 var File_events_v1_events_proto protoreflect.FileDescriptor
 
 var file_events_v1_events_proto_rawDesc = []byte{
@@ -542,12 +625,22 @@ var file_events_v1_events_proto_rawDesc = []byte{
 	0x6e, 0x74, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x41, 0x70,
 	0x70, 0x72, 0x6f, 0x76, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x65, 0x64, 0x48,
 	0x00, 0x52, 0x11, 0x61, 0x70, 0x70, 0x72, 0x6f, 0x76, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x65, 0x64, 0x42, 0x07, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x42, 0x42, 0x5a,
-	0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x57, 0x61, 0x76, 0x65,
-	0x2d, 0x52, 0x69, 0x64, 0x65, 0x72, 0x2d, 0x48, 0x51, 0x2f, 0x70, 0x70, 0x2d, 0x70, 0x72, 0x6f,
-	0x64, 0x75, 0x63, 0x74, 0x2d, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x62, 0x2f, 0x65,
-	0x76, 0x65, 0x6e, 0x74, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x76,
-	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x74, 0x65, 0x64, 0x42, 0x07, 0x0a, 0x05, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x22, 0xa2, 0x01,
+	0x0a, 0x17, 0x52, 0x65, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x65, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65,
+	0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72,
+	0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x69, 0x64,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49,
+	0x64, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x61, 0x67, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52,
+	0x04, 0x74, 0x61, 0x67, 0x73, 0x12, 0x3b, 0x0a, 0x0b, 0x6f, 0x63, 0x63, 0x75, 0x72, 0x72, 0x65,
+	0x64, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f,
+	0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d,
+	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x0a, 0x6f, 0x63, 0x63, 0x75, 0x72, 0x72, 0x65, 0x64,
+	0x41, 0x74, 0x42, 0x42, 0x5a, 0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x57, 0x61, 0x76, 0x65, 0x2d, 0x52, 0x69, 0x64, 0x65, 0x72, 0x2d, 0x48, 0x51, 0x2f, 0x70,
+	0x70, 0x2d, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x2d, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73,
+	0x2f, 0x70, 0x62, 0x2f, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x76,
+	0x65, 0x6e, 0x74, 0x73, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -562,7 +655,7 @@ func file_events_v1_events_proto_rawDescGZIP() []byte {
 	return file_events_v1_events_proto_rawDescData
 }
 
-var file_events_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_events_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_events_v1_events_proto_goTypes = []any{
 	(*UserRegistered)(nil),             // 0: events.v1.UserRegistered
 	(*PersonaRequested)(nil),           // 1: events.v1.PersonaRequested
@@ -570,27 +663,29 @@ var file_events_v1_events_proto_goTypes = []any{
 	(*ContentGenerationRequested)(nil), // 3: events.v1.ContentGenerationRequested
 	(*ContentApprovalRequested)(nil),   // 4: events.v1.ContentApprovalRequested
 	(*ContentEngineEvent)(nil),         // 5: events.v1.ContentEngineEvent
-	(v1.Platform)(0),                   // 6: common.v1.Platform
-	(*timestamppb.Timestamp)(nil),      // 7: google.protobuf.Timestamp
-	(*v11.VideoPacket)(nil),            // 8: content.v1.VideoPacket
+	(*RecommendationRequested)(nil),    // 6: events.v1.RecommendationRequested
+	(v1.Platform)(0),                   // 7: common.v1.Platform
+	(*timestamppb.Timestamp)(nil),      // 8: google.protobuf.Timestamp
+	(*v11.VideoPacket)(nil),            // 9: content.v1.VideoPacket
 }
 var file_events_v1_events_proto_depIdxs = []int32{
-	6,  // 0: events.v1.UserRegistered.platform:type_name -> common.v1.Platform
-	7,  // 1: events.v1.UserRegistered.occurred_at:type_name -> google.protobuf.Timestamp
-	8,  // 2: events.v1.PersonaRequested.own_recent_videos:type_name -> content.v1.VideoPacket
-	7,  // 3: events.v1.PersonaRequested.occurred_at:type_name -> google.protobuf.Timestamp
-	6,  // 4: events.v1.ChannelNewUpload.platform:type_name -> common.v1.Platform
-	8,  // 5: events.v1.ChannelNewUpload.video:type_name -> content.v1.VideoPacket
-	7,  // 6: events.v1.ChannelNewUpload.occurred_at:type_name -> google.protobuf.Timestamp
-	7,  // 7: events.v1.ContentGenerationRequested.occurred_at:type_name -> google.protobuf.Timestamp
-	7,  // 8: events.v1.ContentApprovalRequested.occurred_at:type_name -> google.protobuf.Timestamp
+	7,  // 0: events.v1.UserRegistered.platform:type_name -> common.v1.Platform
+	8,  // 1: events.v1.UserRegistered.occurred_at:type_name -> google.protobuf.Timestamp
+	9,  // 2: events.v1.PersonaRequested.own_recent_videos:type_name -> content.v1.VideoPacket
+	8,  // 3: events.v1.PersonaRequested.occurred_at:type_name -> google.protobuf.Timestamp
+	7,  // 4: events.v1.ChannelNewUpload.platform:type_name -> common.v1.Platform
+	9,  // 5: events.v1.ChannelNewUpload.video:type_name -> content.v1.VideoPacket
+	8,  // 6: events.v1.ChannelNewUpload.occurred_at:type_name -> google.protobuf.Timestamp
+	8,  // 7: events.v1.ContentGenerationRequested.occurred_at:type_name -> google.protobuf.Timestamp
+	8,  // 8: events.v1.ContentApprovalRequested.occurred_at:type_name -> google.protobuf.Timestamp
 	3,  // 9: events.v1.ContentEngineEvent.generation_requested:type_name -> events.v1.ContentGenerationRequested
 	4,  // 10: events.v1.ContentEngineEvent.approval_requested:type_name -> events.v1.ContentApprovalRequested
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	8,  // 11: events.v1.RecommendationRequested.occurred_at:type_name -> google.protobuf.Timestamp
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_events_v1_events_proto_init() }
@@ -608,7 +703,7 @@ func file_events_v1_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_events_v1_events_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

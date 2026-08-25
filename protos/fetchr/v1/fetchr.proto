@@ -29,6 +29,19 @@ service FetchrService {
   // CheckNewUploads compares the channel's latest upload against
   // since_published_at and returns any videos published after it.
   rpc CheckNewUploads(CheckNewUploadsRequest) returns (CheckNewUploadsResponse);
+
+  // FetchTrending returns the platform's regional trending feed, optionally
+  // narrowed to one category. Unlike FetchRecentVideos these videos belong
+  // to arbitrary channels the platform surfaces — they are NOT upserted into
+  // the channel registry or the videos table, so the response carries light
+  // VideoSummary rows rather than full VideoPackets.
+  rpc FetchTrending(FetchTrendingRequest) returns (FetchTrendingResponse);
+
+  // SearchVideos runs a keyword search against the platform. Same
+  // non-persisted contract as FetchTrending. Expensive on YouTube (100
+  // quota units per call) — callers should cap how many keywords they
+  // search per run.
+  rpc SearchVideos(SearchVideosRequest) returns (SearchVideosResponse);
 }
 
 message Channel {
@@ -83,4 +96,57 @@ message CheckNewUploadsRequest {
 message CheckNewUploadsResponse {
   bool has_new = 1;
   repeated content.v1.VideoPacket videos = 2;
+}
+
+// VideoSummary is a flat, non-persisted view of a video the caller only
+// wants to reason about (trending feed, search results) rather than track.
+// Deliberately not content.v1.VideoPacket: there are no comments or
+// transcript here, and nothing is written to the videos table, so a caller
+// can pull 40 trending videos without 40 rows of write amplification.
+message VideoSummary {
+  string video_id = 1;
+  string platform_channel_id = 2;
+  string channel_title = 3;
+  string title = 4;
+  string description = 5;
+  repeated string tags = 6;
+  string category_id = 7;
+  google.protobuf.Timestamp published_at = 8;
+  int64 duration_seconds = 9;
+  int64 view_count = 10;
+  int64 like_count = 11;
+  int64 comment_count = 12;
+}
+
+message FetchTrendingRequest {
+  common.v1.Platform platform = 1;
+  // ISO 3166-1 alpha-2, e.g. "IN". Empty defaults to the server's configured
+  // default region.
+  string region_code = 2;
+  // Platform category id to narrow the feed to (YouTube videoCategoryId).
+  // Empty means "all categories" — a category that doesn't exist in the
+  // region makes the platform error, so callers should be ready to retry
+  // without it.
+  string category_id = 3;
+  int32 limit = 4;
+}
+
+message FetchTrendingResponse {
+  repeated VideoSummary videos = 1;
+}
+
+message SearchVideosRequest {
+  common.v1.Platform platform = 1;
+  string query = 2;
+  int32 limit = 3;
+  // "relevance" (default), "viewCount", or "date".
+  string order = 4;
+  // Restricts results to videos published after this instant — how callers
+  // ask for "what went up in the last 7 days".
+  google.protobuf.Timestamp published_after = 5;
+  string region_code = 6;
+}
+
+message SearchVideosResponse {
+  repeated VideoSummary videos = 1;
 }

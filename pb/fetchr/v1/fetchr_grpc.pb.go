@@ -23,6 +23,8 @@ const (
 	FetchrService_FetchChannel_FullMethodName      = "/fetchr.v1.FetchrService/FetchChannel"
 	FetchrService_FetchRecentVideos_FullMethodName = "/fetchr.v1.FetchrService/FetchRecentVideos"
 	FetchrService_CheckNewUploads_FullMethodName   = "/fetchr.v1.FetchrService/CheckNewUploads"
+	FetchrService_FetchTrending_FullMethodName     = "/fetchr.v1.FetchrService/FetchTrending"
+	FetchrService_SearchVideos_FullMethodName      = "/fetchr.v1.FetchrService/SearchVideos"
 )
 
 // FetchrServiceClient is the client API for FetchrService service.
@@ -47,6 +49,17 @@ type FetchrServiceClient interface {
 	// CheckNewUploads compares the channel's latest upload against
 	// since_published_at and returns any videos published after it.
 	CheckNewUploads(ctx context.Context, in *CheckNewUploadsRequest, opts ...grpc.CallOption) (*CheckNewUploadsResponse, error)
+	// FetchTrending returns the platform's regional trending feed, optionally
+	// narrowed to one category. Unlike FetchRecentVideos these videos belong
+	// to arbitrary channels the platform surfaces — they are NOT upserted into
+	// the channel registry or the videos table, so the response carries light
+	// VideoSummary rows rather than full VideoPackets.
+	FetchTrending(ctx context.Context, in *FetchTrendingRequest, opts ...grpc.CallOption) (*FetchTrendingResponse, error)
+	// SearchVideos runs a keyword search against the platform. Same
+	// non-persisted contract as FetchTrending. Expensive on YouTube (100
+	// quota units per call) — callers should cap how many keywords they
+	// search per run.
+	SearchVideos(ctx context.Context, in *SearchVideosRequest, opts ...grpc.CallOption) (*SearchVideosResponse, error)
 }
 
 type fetchrServiceClient struct {
@@ -97,6 +110,26 @@ func (c *fetchrServiceClient) CheckNewUploads(ctx context.Context, in *CheckNewU
 	return out, nil
 }
 
+func (c *fetchrServiceClient) FetchTrending(ctx context.Context, in *FetchTrendingRequest, opts ...grpc.CallOption) (*FetchTrendingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FetchTrendingResponse)
+	err := c.cc.Invoke(ctx, FetchrService_FetchTrending_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fetchrServiceClient) SearchVideos(ctx context.Context, in *SearchVideosRequest, opts ...grpc.CallOption) (*SearchVideosResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchVideosResponse)
+	err := c.cc.Invoke(ctx, FetchrService_SearchVideos_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FetchrServiceServer is the server API for FetchrService service.
 // All implementations must embed UnimplementedFetchrServiceServer
 // for forward compatibility.
@@ -119,6 +152,17 @@ type FetchrServiceServer interface {
 	// CheckNewUploads compares the channel's latest upload against
 	// since_published_at and returns any videos published after it.
 	CheckNewUploads(context.Context, *CheckNewUploadsRequest) (*CheckNewUploadsResponse, error)
+	// FetchTrending returns the platform's regional trending feed, optionally
+	// narrowed to one category. Unlike FetchRecentVideos these videos belong
+	// to arbitrary channels the platform surfaces — they are NOT upserted into
+	// the channel registry or the videos table, so the response carries light
+	// VideoSummary rows rather than full VideoPackets.
+	FetchTrending(context.Context, *FetchTrendingRequest) (*FetchTrendingResponse, error)
+	// SearchVideos runs a keyword search against the platform. Same
+	// non-persisted contract as FetchTrending. Expensive on YouTube (100
+	// quota units per call) — callers should cap how many keywords they
+	// search per run.
+	SearchVideos(context.Context, *SearchVideosRequest) (*SearchVideosResponse, error)
 	mustEmbedUnimplementedFetchrServiceServer()
 }
 
@@ -140,6 +184,12 @@ func (UnimplementedFetchrServiceServer) FetchRecentVideos(context.Context, *Fetc
 }
 func (UnimplementedFetchrServiceServer) CheckNewUploads(context.Context, *CheckNewUploadsRequest) (*CheckNewUploadsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckNewUploads not implemented")
+}
+func (UnimplementedFetchrServiceServer) FetchTrending(context.Context, *FetchTrendingRequest) (*FetchTrendingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FetchTrending not implemented")
+}
+func (UnimplementedFetchrServiceServer) SearchVideos(context.Context, *SearchVideosRequest) (*SearchVideosResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchVideos not implemented")
 }
 func (UnimplementedFetchrServiceServer) mustEmbedUnimplementedFetchrServiceServer() {}
 func (UnimplementedFetchrServiceServer) testEmbeddedByValue()                       {}
@@ -234,6 +284,42 @@ func _FetchrService_CheckNewUploads_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FetchrService_FetchTrending_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FetchTrendingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FetchrServiceServer).FetchTrending(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FetchrService_FetchTrending_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FetchrServiceServer).FetchTrending(ctx, req.(*FetchTrendingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FetchrService_SearchVideos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchVideosRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FetchrServiceServer).SearchVideos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FetchrService_SearchVideos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FetchrServiceServer).SearchVideos(ctx, req.(*SearchVideosRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FetchrService_ServiceDesc is the grpc.ServiceDesc for FetchrService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -256,6 +342,14 @@ var FetchrService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckNewUploads",
 			Handler:    _FetchrService_CheckNewUploads_Handler,
+		},
+		{
+			MethodName: "FetchTrending",
+			Handler:    _FetchrService_FetchTrending_Handler,
+		},
+		{
+			MethodName: "SearchVideos",
+			Handler:    _FetchrService_SearchVideos_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

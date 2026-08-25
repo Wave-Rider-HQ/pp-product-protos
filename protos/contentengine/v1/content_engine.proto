@@ -40,6 +40,12 @@ enum SourceType {
   SOURCE_TYPE_ON_DEMAND = 2;
   SOURCE_TYPE_TRENDING_TAG = 3;
   SOURCE_TYPE_PRODUCT_PROMOTION = 4;
+  // A concept the recommendation pipeline already picked and ranked, from
+  // the creator's own history plus their competitors plus current trends.
+  // Unlike the other sources this one arrives pre-decided — the "what should
+  // I make" question is already answered, so stage 1 has a specific concept
+  // to work from rather than having to invent candidates.
+  SOURCE_TYPE_RECOMMENDATION = 5;
 }
 
 // ContentInputs is a source-agnostic bag of everything the generator might
@@ -56,6 +62,11 @@ message ContentInputs {
   // deliberately excludes transcript — competitor transcripts are a
   // mock placeholder only (captions require the video owner's own OAuth).
   CompetitorVideoSnapshot competitor_video = 5;
+  // recommendation_item_id is the recommendation_items row this request was
+  // created from — SOURCE_TYPE_RECOMMENDATION. That row already carries the
+  // title, hook, outline, format and the signals behind them, so the
+  // generator loads it rather than having the caller restate it here.
+  string recommendation_item_id = 6;
 }
 
 message CompetitorVideoSnapshot {
